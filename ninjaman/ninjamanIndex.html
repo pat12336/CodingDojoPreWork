@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NinjaMan</title>
+    <style type = "text/css">
+    *{
+        margin: 0;
+        padding: 0;
+    }
+    .row{
+        line-height: 0;
+    }
+    .wall{
+        background-color: blue;
+        height: 40px;
+        width: 40px;
+        display: inline-block;
+    }
+    .sushi{
+        background-color: black;
+        height: 40px;
+        width: 40px;
+        display: inline-block;
+        background-image: url('sushi.png');
+        background-size: contain;
+    }
+    .onigiri{
+        background-color: black;
+        height: 40px;
+        width: 40px;
+        display: inline-block;
+        background-image: url('onigiri.png');
+        background-size: contain;
+    }
+    .blank{
+        background-color: black;
+        height: 40px;
+        width: 40px;
+        display: inline-block;
+    }
+    #ninjaman{
+        background-color: black;
+        height: 40px;
+        width: 40px;
+        display: inline-block;
+        background-image: url('ninja.gif');
+        background-size: contain;
+        position: absolute;
+    }
+    .bluey{
+        background-color: black;
+        height: 40px;
+        width: 40px;
+        display: inline-block;
+        background-image: url('bluey.gif');
+        background-size: contain;
+        position: absolute;
+    }
+    .pinky{
+        background-color: black;
+        height: 40px;
+        width: 40px;
+        display: inline-block;
+        background-image: url('pinky.gif');
+        background-size: contain;
+        position: absolute;
+    }
+    .pumpky{
+        background-color: black;
+        height: 40px;
+        width: 40px;
+        display: inline-block;
+        background-image: url('pumpky.gif');
+        background-size: contain;
+        position: absolute;
+    }
+    #score{
+        position: absolute;
+        text-align: center;
+        top: 0px;
+        left: 0px;
+        color: white;
+    }
+    #lives{
+        position: absolute;
+        text-align: center;
+        top: 0px;
+        left: 480px;
+        color: white;
+    }
+
+    .gameover{
+        position: absolute;
+        text-align: center;
+        background-color: black;
+        color: white;
+        height: 520px;
+        width: 520px;
+        font-size: 30px;
+        font-weight: bold;
+        
+    }
+    
+    </style>
+</head>
+<body>
+    <div id='world'></div>
+    <div id='ninjaman'></div>
+    <div id='score'></div>
+    <div id='lives'></div>
+    <div id='ghosts'></div>
+</body>
+<script type="text/javascript">
+    const dimension = 15;
+    let world = [];
+
+    let worldDict = {
+        0: 'blank',
+        1: 'wall',
+        2: 'sushi',
+        3: 'onigiri'
+    }
+
+    let foodPts = {
+        sushi: 10,
+        onigiri: 5
+    };
+
+    let ninjaman = {
+        x: 1,
+        y: 1,
+        sushi: 0,
+        onigiri: 0,
+        lives: 3
+    };
+
+    let ghosts = [
+        {x: 13, y: 13, name: "bluey"},
+        {x: 10, y: 10, name: "pinky"},
+        {x: 8, y: 5, name: "pumpky"}
+
+    ];
+
+    function generateRandomWorld(){
+        let row;
+        let wallNum = 0;
+        let choice;
+        let wallPerRow;
+        for(let i = 0; i < dimension; i++){
+            row = [];
+            wallPerRow = wallNum +2
+            for(let j = 0; j < dimension; j++){
+                if(i == 0 || j == 0 || j == dimension-1 || i == dimension-1){
+                    row.push(1);
+                }
+                else if(i == 1 || j == 1 || j == dimension-2 || i == dimension-2){
+                    if(i == 1 && j == 1){
+                        row.push(0);
+                    }
+                    else{
+                        row.push(2);
+                    }
+                }
+                else{
+                    choice = Math.floor(Math.random() * (3) + 1);
+                    if(choice == 1){
+                        if(wallNum >= wallPerRow || wallNum >= 20){
+                            choice = 2;
+                        }
+                        else{
+                            wallNum++;
+                        }
+                    }
+                    row.push(choice);
+                }
+            }
+            world.push(row);
+        }
+
+    }
+    generateRandomWorld();
+
+
+
+    function drawWorld(){
+        output = '';
+
+        for(let row = 0; row < world.length; row++){
+            output += "<div class = 'row'>";
+            for(let x = 0; x < world[row].length;x++){
+                output += "<div class = '" + worldDict[
+                    world[row][x]] + "'></div>"
+            }
+            output +="</div>"
+        }
+
+        document.getElementById('world').innerHTML = output;
+    }
+    drawWorld();
+
+    
+    function drawNinjaman(){
+        document.getElementById('ninjaman').style.top = ninjaman.y * 40 + 'px'
+        document.getElementById('ninjaman').style.left = ninjaman.x * 40 + 'px'
+    }
+    drawNinjaman();
+
+    function placeGhosts(){
+        ghosts.forEach(ghost => {
+            xPos = Math.floor(Math.random() * (9) + 5)
+            yPos = Math.floor(Math.random() * (9) + 5)
+
+            if(world[yPos][xPos] == 1){
+                if(world[yPos][xPos-1] != 1){
+                    xPos -= 1;
+                }
+                else if(world[yPos][xPos+1] != 1){
+                    xPos += 1;
+                }
+                else if(world[yPos-1][xPos] != 1){
+                    yPos -= 1;
+                }
+                else if(world[yPos+1][xPos] != 1){
+                    yPos += 1;
+                }
+            }
+
+            ghost.x = xPos
+            ghost.y = yPos
+        });
+    }
+
+    placeGhosts();
+
+    function drawGhosts(){
+        content = ''
+        for(i = 0; i < ghosts.length; i++){
+           
+            content += "<div class='"+ghosts[i].name+"' style='left:"+ghosts[i].x*40+"px; top:"+ghosts[i].y*40+"px'></div>"
+        
+        }
+        //content += "<div class='ghost' style='left:"+ghosts[0].x*40+"px; top:"+ghosts[0].y*40+"px'></div>";
+        document.getElementById('ghosts').innerHTML = content;
+    }
+    drawGhosts();
+
+    function updateScore(){
+        let score = ninjaman.sushi * foodPts.sushi + ninjaman.onigiri * foodPts.onigiri;
+        document.getElementById('score').innerHTML = "Score: " +  score
+    }
+    updateScore();
+
+    function updateLives(){
+        let lives = ninjaman.lives;
+        document.getElementById('lives').innerHTML = "LIVES: " + lives;
+    }
+    updateLives();
+
+    function noWall(x, y){
+        if(world[y][x] == 1){
+            return false;
+        } 
+        return true;
+    }
+    
+    function hitPlayer(x, y){
+        if(x == ninjaman.x && y == ninjaman.y){
+            ninjaman.lives--;
+            ninjaman.x = 1;
+            ninjaman.y = 1;
+            drawNinjaman();
+        }
+    }
+
+    function occupiedSpace(x, y, index){
+        for(let i = 0; i < ghosts.length; i++){
+            if(i != index && ghosts[i].x == x && ghosts[i].y == y){
+                return true;
+            }
+        }
+        return false;
+    }
+    function nonOptimalMove(index){
+        if(noWall(ghosts[index].x-1, ghosts[index].y) && !occupiedSpace(ghosts[index].x-1, ghosts[index].y, index)){
+            ghosts[index].x--;
+        }
+        else if(noWall(ghosts[index].x, ghosts[index].y-1) && !occupiedSpace(ghosts[index].x, ghosts[index].y-1, index)){
+            ghosts[index].y--;
+        }
+        else if(noWall(ghosts[index].x+1, ghosts[index].y) && !occupiedSpace(ghosts[index].x+1, ghosts[index].y, index)){
+            ghosts[index].x++;
+        }
+        else if(noWall(ghosts[index].x, ghosts[index].y+1) && !occupiedSpace(ghosts[index].x, ghosts[index].y+1, index)){
+            ghosts[index].y++;
+        }
+    }
+    function movingGhosts(){
+       for(let i = 0; i < ghosts.length; i++){
+           ghostMove(i);
+       }
+    }
+    function ghostMove(index){
+        if(ninjaman.x - ghosts[index].x < 0 && noWall(ghosts[index].x-1, ghosts[index].y) && !occupiedSpace(ghosts[index].x-1, ghosts[index].y, index)){
+            ghosts[index].x--;
+        }
+        else if(ninjaman.x - ghosts[index].x > 0 && noWall(ghosts[index].x+1, ghosts[index].y) && !occupiedSpace(ghosts[index].x+1, ghosts[index].y, index)){
+            ghosts[index].x++;
+        }
+        else if(ninjaman.y - ghosts[index].y < 0 && noWall(ghosts[index].x, ghosts[index].y-1) && !occupiedSpace(ghosts[index].x, ghosts[index].y-1, index)){
+            ghosts[index].y--;
+        }
+        else if(ninjaman.y - ghosts[index].y > 0 && noWall(ghosts[index].x, ghosts[index].y+1) && !occupiedSpace(ghosts[index].x, ghosts[index].y+1, index)){
+            ghosts[index].y++;
+        }
+        else{
+            nonOptimalMove(index)
+        }
+    }
+    
+    document.onkeydown = function(e){
+    		//console.log(e);
+    		if(e.keyCode == 37) { // LEFT
+    			if(world[ninjaman.y][ninjaman.x-1] != 1)
+                    ninjaman.x--
+    		}
+    		else if (e.keyCode == 39) { // RIGHT
+                if(world[ninjaman.y][ninjaman.x+1] != 1)
+                    ninjaman.x++    	
+    		}
+    		else if (e.keyCode == 40) { // DOWN
+				if(world[ninjaman.y+1][ninjaman.x] != 1)    
+                    ninjaman.y++
+    		}
+    		else if(e.keyCode == 38) { //UP
+                if(world[ninjaman.y-1][ninjaman.x] != 1)
+                    ninjaman.y--
+			}
+            if(world[ninjaman.y][ninjaman.x] == 2){
+                ninjaman.sushi++;
+            }
+            else if(world[ninjaman.y][ninjaman.x] == 3){
+                ninjaman.onigiri++;
+            }
+            world[ninjaman.y][ninjaman.x] = 0;
+            drawNinjaman();
+            drawWorld();
+            updateScore();            
+    }
+
+    function gameLoop(){
+
+        movingGhosts();
+        ghosts.forEach(ghost =>{
+            hitPlayer(ghost.x, ghost.y)
+            if(ninjaman.lives <= 0){
+                document.body.innerHTML = "<div class='gameover'>GAME OVER</div>"
+            }
+        });
+        drawGhosts();
+        updateLives();
+
+        setTimeout(gameLoop, 500)
+    }
+
+    gameLoop();
+
+
+
+</script>
+</html>
